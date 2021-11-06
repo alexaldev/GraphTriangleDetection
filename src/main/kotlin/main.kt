@@ -1,3 +1,9 @@
-fun main() {
-    println("Hello finally!")
+import domain.GraphParser
+
+fun main(args: Array<String>) {
+
+    val config = GraphParser.Config(
+        filename = args[0]
+    )
+    GraphParser(config)
 }
