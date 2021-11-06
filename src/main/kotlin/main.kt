@@ -5,5 +5,5 @@ fun main(args: Array<String>) {
     val config = GraphParser.Config(
         filename = args[0]
     )
-    GraphParser(config)
+
 }

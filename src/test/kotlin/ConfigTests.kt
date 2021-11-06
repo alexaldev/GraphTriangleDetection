@@ -1,8 +1,6 @@
 import domain.GraphParser
 import org.junit.jupiter.api.assertThrows
 import java.lang.IllegalArgumentException
-import kotlin.test.Test
-import kotlin.test.assertTrue
 
 class ConfigTests {
 
