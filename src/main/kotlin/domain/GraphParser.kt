@@ -5,7 +5,8 @@ import java.lang.Exception
 
 class GraphParser(private val config: Config) {
 
-    private var maxNumOfVertices: Int = 0
+    var maxNumOfVertices: Int = 0
+        private set
 
     private fun findMaxNumOfVertices() {
 
@@ -16,6 +17,10 @@ class GraphParser(private val config: Config) {
                     s.split(" ").map { it.toInt() }
                 }.maxByOrNull { it }!!
             }
+    }
+
+    fun generate() {
+        findMaxNumOfVertices()
     }
 
     class Config(
