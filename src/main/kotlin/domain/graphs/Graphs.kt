@@ -1,8 +1,13 @@
 package domain.graphs
 
+import domain.TrianglesCounter
+import domain.TrianglesCounterAlgorithm
+
 abstract class Graph<T> {
     abstract fun generateMetrics(): List<GraphMetrics>
     abstract fun addEdge(sourceV: T, destinationV: T)
+    abstract fun removeEdge(v: T, u: T): Boolean
+    abstract fun neighbours(v: T): List<T>
     abstract fun backedDataStructureDescription(): String
     enum class Type {
         ADJ_MAP, ADJ_MATRIX
@@ -10,28 +15,53 @@ abstract class Graph<T> {
 }
 
 sealed class GraphMetrics(val name: String, val value: Double) {
-    class NumOfVertices(count: Int) : GraphMetrics("|V|", count.toDouble())
-    class NumOfEdges(count: Int) : GraphMetrics("|E|", count.toDouble())
+    data class NumOfVertices(val count: Int) : GraphMetrics("|V|", count.toDouble())
+    data class NumOfEdges(val count: Int) : GraphMetrics("|E|", count.toDouble())
+    data class NumOfTotalTriangles(val count: Int) : GraphMetrics("Total count of triangles", count.toDouble())
 }
 
-// ---------- Implementations
+// ---------- Implementations -----------------
 
-class GraphWithAdjMatrix<T> : Graph<T>() {
+class GraphWithAdjMatrix(private val numOfVertices: Int) : Graph<Int>() {
 
-    override fun generateMetrics(): List<GraphMetrics> {
-        TODO("Not yet implemented")
+    private val matrix = MutableList(numOfVertices) { MutableList(numOfVertices) {0} }
+
+    private val verticesCount: Int by lazy { numOfVertices }
+    private val edgesCount: Int by lazy {
+        matrix.sumOf { row -> row.count { it == 1 } }
     }
 
-    override fun addEdge(sourceV: T, destinationV: T) {
-        TODO("Not yet implemented")
+    override fun generateMetrics(): List<GraphMetrics> {
+        return listOf(
+            GraphMetrics.NumOfVertices(verticesCount),
+            GraphMetrics.NumOfEdges(edgesCount)
+        )
+    }
+
+    override fun addEdge(sourceV: Int, destinationV: Int) {
+        matrix[sourceV][destinationV] = 1
     }
 
     override fun backedDataStructureDescription(): String {
         TODO("Not yet implemented")
     }
+
+    override fun removeEdge(v: Int, u: Int): Boolean {
+        val edgeExists = (matrix[v][u] == 1)
+        return if (edgeExists) {
+            matrix[v][u] = 0
+            true
+        } else {
+            false
+        }
+    }
+
+    override fun neighbours(v: Int): List<Int> {
+        TODO("Not yet implemented.")
+    }
 }
 
-class GraphWithMap<T> : Graph<T>() {
+class GraphWithMap<T>(trianglesCounter: TrianglesCounter = TrianglesCounter(TrianglesCounterAlgorithm.Naive)) : Graph<T>() {
 
     private val adjacencyMap: HashMap<T, HashSet<T>> = HashMap()
 
@@ -77,4 +107,8 @@ class GraphWithMap<T> : Graph<T>() {
         |...
         |...
     """.trimMargin()
+
+    override fun removeEdge(v: T, u: T) = adjacencyMap[v]?.remove(u) ?: false
+
+    override fun neighbours(v: T): List<T> = adjacencyMap[v]?.toList() ?: emptyList()
 }
