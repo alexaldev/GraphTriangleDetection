@@ -4,8 +4,8 @@ plugins {
     kotlin("jvm") version "1.5.30"
 }
 
-group = "me.pesimatik"
-version = "1.0-SNAPSHOT"
+group = "com.alexallafi"
+version = "0.0.1"
 
 repositories {
     mavenCentral()
@@ -13,6 +13,7 @@ repositories {
 
 dependencies {
     testImplementation(kotlin("test"))
+    testImplementation("org.junit.jupiter:junit-jupiter-params:5.7.0")
 }
 
 tasks.test {

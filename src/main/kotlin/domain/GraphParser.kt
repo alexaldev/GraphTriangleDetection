@@ -3,6 +3,7 @@ package domain
 import domain.graphs.Graph
 import domain.graphs.GraphWithAdjMatrix
 import domain.graphs.GraphWithMap
+import domain.graphs.takeFrom
 import java.io.File
 import java.lang.IllegalArgumentException
 import java.util.stream.Collectors
@@ -11,6 +12,9 @@ import kotlin.streams.toList
 class GraphParser(private val config: Config) {
 
     private val reader = config.graphFile.file.bufferedReader()
+    private val isVerticesLine: (String) -> Boolean = {
+        (it.first().isDigit()) && (it.split(' ').size == 2)
+    }
 
     private fun max(l: List<String>) =
         l.map { lines ->
@@ -23,28 +27,17 @@ class GraphParser(private val config: Config) {
 
     // Public API
 
-    fun parse(callback: (Graph<Int>) -> Unit) {
-        parse {
-            object : Callback {
-                override fun onProgress(percentageCompleted: Float) {
-
-                }
-
-                override fun onCompleted(graph: Graph<Int>) {
-                    callback(graph)
-                }
+    fun parse(c: (Graph) -> Unit) {
+        parse(object :  Callback {
+            override fun onCompleted(graph: Graph) {
+                c(graph)
             }
-        }
+        })
     }
 
-    fun parse(callback: Callback) {
+    private fun parse(callback: Callback) {
 
-        if (config.graphFile.isWeighted()) {
-            println("Graph file contains weights, ignoring them.")
-        }
-
-        val lines = reader.readLines()
-        var totalLines = lines.size.toFloat()
+        val lines = reader.readLines().takeFrom(isVerticesLine)
 
         val result = when (config.graphType) {
             Graph.Type.ADJ_MATRIX -> GraphWithAdjMatrix(max(lines) + 1)
@@ -52,16 +45,9 @@ class GraphParser(private val config: Config) {
         }
 
         lines
-            .parallelStream()
             .map { it.split(' ') }
             .map { Pair(it[0].toInt(), it[1].toInt()) }
-            .toList()
-            .forEachIndexed { index, pair ->
-                if (((index / totalLines) * 100).toInt()% 10 == 0) {
-                    callback.onProgress((index / totalLines) * 100)
-                }
-                result.addEdge(pair.first, pair.second)
-            }
+            .forEach { result.addEdge(it.first, it.second) }
 
         callback.onCompleted(result)
     }
@@ -70,12 +56,10 @@ class GraphParser(private val config: Config) {
         val graphFile: GraphFile,
         val numberOfCores: Int = 1,
         val graphType: Graph.Type = Graph.Type.ADJ_MATRIX,
-        val parsingProgress: Boolean = false,
-        val generateMetricsOnTheFly: Boolean = false
+        val parsingProgress: Boolean = false
     )
 
     interface Callback {
-        fun onProgress(percentageCompleted: Float)
-        fun onCompleted(graph: Graph<Int>)
+        fun onCompleted(graph: Graph)
     }
 }

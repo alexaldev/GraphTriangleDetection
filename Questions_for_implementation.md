@@ -6,15 +6,7 @@
 Directed-undirected, weighted ή οχι ; 
 #### Οι γράφοι στους οποίους θα κάνουμε evaluate είναι της μορφής [v: Int, v: Int] ; 
 
-#### Τι ξερετε απο functional programming ? Αυτό σίγουρα δεν ειναι σωστό:
-reader.lines()
-.parallel()
-.map { it.split(' ')}
-.map { Pair(it[0].toInt(), it[1].toInt())}
-.collect(Collectors.toList())
-.forEach {
-result.addEdge(it.first, it.second)
-}
+#### Στο paper Counting triangles δε μπορώ να καταλάβω πως προκύπτει το clustering coeffecient = 3/10
 
 #### Να προχωρήσω με Executors framework ?  
 
@@ -29,3 +21,6 @@ result.addEdge(it.first, it.second)
 
 #### Benchmarking ? 
 Μπορώ να κάνω integrate την JMH έπειτα από διάβασμα. 
+
+#### Απορίες για αλγορίθμους: 
+ * Forward: Τι εννοεί 'ordered list of vertices'

@@ -2,12 +2,17 @@ package domain.graphs
 
 import domain.TrianglesCounter
 import domain.TrianglesCounterAlgorithm
+import java.util.concurrent.ConcurrentHashMap
+import java.util.stream.Stream
 
-abstract class Graph<T> {
+abstract class Graph {
     abstract fun generateMetrics(): List<GraphMetrics>
-    abstract fun addEdge(sourceV: T, destinationV: T)
-    abstract fun removeEdge(v: T, u: T): Boolean
-    abstract fun neighbours(v: T): List<T>
+    abstract fun addEdge(sourceV: Int, destinationV: Int)
+    abstract fun removeEdge(v: Int, u: Int): Boolean
+    abstract fun neighbours(v: Int): Set<Int>
+    abstract fun isEdge(v1: Int, v2: Int): Boolean
+    abstract fun vertices(): Stream<Int>
+    abstract fun degree(v: Int): Int
     abstract fun backedDataStructureDescription(): String
     enum class Type {
         ADJ_MAP, ADJ_MATRIX
@@ -22,7 +27,7 @@ sealed class GraphMetrics(val name: String, val value: Double) {
 
 // ---------- Implementations -----------------
 
-class GraphWithAdjMatrix(private val numOfVertices: Int) : Graph<Int>() {
+class GraphWithAdjMatrix(private val numOfVertices: Int) : Graph() {
 
     private val matrix = MutableList(numOfVertices) { MutableList(numOfVertices) {0} }
 
@@ -56,14 +61,26 @@ class GraphWithAdjMatrix(private val numOfVertices: Int) : Graph<Int>() {
         }
     }
 
-    override fun neighbours(v: Int): List<Int> {
+    override fun neighbours(v: Int): Set<Int> {
         TODO("Not yet implemented.")
+    }
+
+    override fun isEdge(v1: Int, v2: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun vertices(): Stream<Int> {
+        TODO("Not yet implemented")
+    }
+
+    override fun degree(v: Int): Int {
+        TODO("Not yet implemented")
     }
 }
 
-class GraphWithMap<T>(trianglesCounter: TrianglesCounter = TrianglesCounter(TrianglesCounterAlgorithm.Naive)) : Graph<T>() {
+class GraphWithMap(trianglesCounter: TrianglesCounter = TrianglesCounter(TrianglesCounterAlgorithm.Naive)) : Graph() {
 
-    private val adjacencyMap: HashMap<T, HashSet<T>> = HashMap()
+    private val adjacencyMap: HashMap<Int, HashSet<Int>> = HashMap()
 
     private val verticesCount: Int by lazy {
         adjacencyMap.size
@@ -75,12 +92,10 @@ class GraphWithMap<T>(trianglesCounter: TrianglesCounter = TrianglesCounter(Tria
             .fold(0) { acc, hashSet -> acc + hashSet.size } / 2
     }
 
-    override fun addEdge(sourceV: T, destinationV: T) {
-        // Add edge to source vertex / node.
+    override fun addEdge(sourceV: Int, destinationV: Int) {
         adjacencyMap
             .computeIfAbsent(sourceV) { HashSet() }
             .add(destinationV)
-        // Add edge to destination vertex / node.
         adjacencyMap
             .computeIfAbsent(destinationV) { HashSet() }
             .add(sourceV)
@@ -108,7 +123,19 @@ class GraphWithMap<T>(trianglesCounter: TrianglesCounter = TrianglesCounter(Tria
         |...
     """.trimMargin()
 
-    override fun removeEdge(v: T, u: T) = adjacencyMap[v]?.remove(u) ?: false
+    override fun removeEdge(v: Int, u: Int) = adjacencyMap[v]?.remove(u) ?: false
 
-    override fun neighbours(v: T): List<T> = adjacencyMap[v]?.toList() ?: emptyList()
+    override fun neighbours(v: Int): Set<Int> = adjacencyMap[v] ?: emptySet()
+
+    override fun isEdge(v1: Int, v2: Int): Boolean {
+        TODO("Not yet implemented")
+    }
+
+    override fun vertices(): Stream<Int> {
+        return adjacencyMap.keys.stream()
+    }
+
+    override fun degree(v: Int): Int {
+        TODO("Not yet implemented")
+    }
 }

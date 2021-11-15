@@ -1,26 +1,27 @@
-import domain.GraphFile
-import domain.GraphParser
+import domain.*
 import domain.graphs.Graph
+import domain.graphs.takeFrom
 import java.io.File
 
 fun main(args: Array<String>) {
 
-    val graphFile = GraphFile(File(args[0]))
-
     val config = GraphParser.Config(
-        graphFile = graphFile,
-        graphType = Graph.Type.ADJ_MAP,
-        parsingProgress = true
+        graphFile = GraphFile(File(args[0])),
+        graphType = Graph.Type.ADJ_MAP
     )
-
-    GraphParser(config).parse(object : GraphParser.Callback {
-        override fun onProgress(percentageCompleted: Float) {
-            println("Progress: $percentageCompleted")
+    val parser = GraphParser(config)
+    val trianglesCounter = TrianglesCounter(TrianglesCounterAlgorithm.NodeIterator)
+    val fakeTrianglesCompletion = object : Callback {
+        override fun onResponse(result: TrianglesResult) {
+            println("Total triangles: ${result.numOfTriangles}")
         }
-
-        override fun onCompleted(graph: Graph<Int>) {
-            println("Graph loaded in-memory")
-            graph.generateMetrics().forEach { println(it) }
+        override fun onError(e: Exception) {
         }
-    })
+    }
+
+    parser.parse { g ->
+        g.generateMetrics().forEach { println(it.toString()) }
+        println("Graph loaded in memory. Computing triangles...")
+        trianglesCounter.compute(g, fakeTrianglesCompletion)
+    }
 }
